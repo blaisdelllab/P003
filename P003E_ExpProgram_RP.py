@@ -2,9 +2,24 @@
 # -*- coding: utf-8 -*-
 """
 Created on Mon Jan 9 2023
+
+Last updated: 2023-09-25
+
 @author: cyruskirkman & Megan C.
 
+This project investigated the roles of various scedules of reinforcement 
+(Pavlovian, instrumental, and omission contingencies) in dictating spatial 
+and temoporal response variability. It also accounted for proximity to
+reinforcement by modifying the number of responses to reach each trial's
+outcome; this manipulation occured each phase.
 
+All subjects underwent three phases: RR2, RR5, and RR10. Across each session
+of each phase, trials could be one of three types (the reinforcement schedules
+described above), differentiated by stimulus color--nine distinct colors were
+counter-balanced across twelve subjects. 
+
+Each trial lasted 10 seconds. Within these 10 s, responses on and off the
+presented cue were tracked and could impact the outcome of the trial.
 """
 # Prior to running any code, its conventional to first import relevant 
 # libraries for the entire script. These can range from python libraries (sys)
@@ -363,7 +378,7 @@ class MainScreen(object):
             if self.subject_ID == "TEST": # If test, don't worry about ITI delays
                 self.ITI_duration = 1000
                 self.hopper_duration = 1000
-                self.root.after(1, lambda: self.ITI())
+                self.root.after(10000, lambda: self.ITI())
             else:
                 self.root.after(30000, lambda: self.ITI())
 
@@ -450,7 +465,10 @@ class MainScreen(object):
         
     #%%  
     """
-    The code below is very straightforward. It is called 
+    The code below is very straightforward. It builds the key for the specific
+    trial, ties a function to the background and key, and then starts a 10s 
+    timer for the trial. Key pecks are incrementally counted and calculated 
+    at the end of the timer to see if the criterion is met.
     """
         
     def build_keys(self):
@@ -516,34 +534,20 @@ class MainScreen(object):
         # Lastly, start a timer for the trial
         self.trial_timer = self.root.after(self.trial_timer_duration,
                                            self.calculate_trial_outcome)
-
-    
-    """ 
-    The three functions below represent the outcomes of choices made under the 
-    two different cotnigencies (simple or choice). In the simple task (with
-    only one "choice" key and target color), any response on the green "choice" 
-    key within time contraints is correct and will be reinforced and logged as
-    such. In the true choice task, only a choice of the "correct" target-color
-    matching key will be reinforced; the opposite key leads to a TO.
-    
-    Note that, in this setup, the left and right choice keys are fixed to a 
-    specific color (left is always blue). We'll need to counterbalance color
-    across subjects later on.
-    """
     
     def key_press(self, event, event_type):
+        # This is the function that is called whenever a key is pressed. It
+        # simply increments the counter and writes a line of data.
         # Add to peck counter
         self.trial_peck_counter += 1
         # Write data for the peck
         self.write_data(event, event_type)
         
-        
-    
-    # %% Post-choice contingencies: always either reinforcement (provide_food)
-    # or time-out (time_out_func). Both lead back to the next trial's ITI,
-    # thereby completing the loop.
-    
+
     def calculate_trial_outcome(self):
+        # This function is called once the 10s timer ellapses and calculates
+        # whether the trial will be reinforced or not.
+        
         self.clear_canvas()
         
         # Always reinforce PAV trials
@@ -670,40 +674,45 @@ class MainScreen(object):
         
     
     def write_data(self, event, outcome):
-        # This function writes a new data line after EVERY peck. Data is
-        # organized into a matrix (just a list/vector with two dimensions,
-        # similar to a table). This matrix is appended to throughout the 
-        # session, then written to a .csv once at the end of the session.
         try:
-            if event != None: 
-                x, y = event.x, event.y
-            else: # There are certain data events that are not pecks.
-                x, y = "NA", "NA"   
+            # This function writes a new data line after EVERY peck. Data is
+            # organized into a matrix (just a list/vector with two dimensions,
+            # similar to a table). This matrix is appended to throughout the 
+            # session, then written to a .csv once at the end of the session.
+            try:
+                if event != None: 
+                    x, y = event.x, event.y
+                else: # There are certain data events that are not pecks.
+                    x, y = "NA", "NA"   
+                    
+                print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | {self.trial_type:^5} | {str(datetime.now() - self.start_time)}")
+                # print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | Target: {self.current_target_location: ^2} | {str(datetime.now() - self.start_time)}")
+                self.session_data_frame.append([
+                    str(datetime.now() - self.start_time), # SessionTime as datetime object
+                    x, # X coordinate of a peck
+                    y, # Y coordinate of a peck
+                    outcome, # Type of event (e.g., background peck, target presentation, session end, etc.)
+                    round((time() - self.trial_start - (self.ITI_duration/1000)), 5), # Time into this trial minus ITI (if session ends during ITI, will be negative)
+                    self.trial_type, # PAV, INS, OMS
+                    self.trial_peck_counter, # Count of pecks that trial
+                    self.current_trial_counter, # Trial count within session (1 - max # trials)
+                    self.subject_ID, # Name of subject (same across datasheet)
+                    self.exp_phase_name, # Phase name (e.g., RR2)
+                    date.today() # Today's date as "MM-DD-YYYY"
+                    ])
                 
-            print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | {self.trial_type:^5} | {str(datetime.now() - self.start_time)}")
-            # print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | Target: {self.current_target_location: ^2} | {str(datetime.now() - self.start_time)}")
-            self.session_data_frame.append([
-                str(datetime.now() - self.start_time), # SessionTime as datetime object
-                x, # X coordinate of a peck
-                y, # Y coordinate of a peck
-                outcome, # Type of event (e.g., background peck, target presentation, session end, etc.)
-                round((time() - self.trial_start - (self.ITI_duration/1000)), 5), # Time into this trial minus ITI (if session ends during ITI, will be negative)
-                self.trial_type, # PAV, INS, OMS
-                self.trial_peck_counter, # Count of pecks that trial
-                self.current_trial_counter, # Trial count within session (1 - max # trials)
-                self.subject_ID, # Name of subject (same across datasheet)
-                self.exp_phase_name, # Phase name (e.g., RR2)
-                date.today() # Today's date as "MM-DD-YYYY"
-                ])
+            except AttributeError:
+                # If a variable isn't set-up
+                print("Unable to save data...")
+                pass
+            
+            header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
+                           "TrialType","TrialPeckNum", "TrialNum",
+                           "Subject", "ExpPhase", "Date"] # Column headers
             
         except AttributeError:
-            # If a variable isn't set-up
-            print("Unable to save data...")
+            print("-Error writing data...")
             pass
-        
-        header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
-                       "TrialType","TrialPeckNum", "TrialNum",
-                       "Subject", "ExpPhase", "Date"] # Column headers
 
         
     def write_comp_data(self, SessionEnded):
