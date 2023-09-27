@@ -296,8 +296,9 @@ class MainScreen(object):
         self.session_data_frame = [] #This where trial-by-trial data is stored
         self.trials_completed = 0 # This counts the number of trials that have passed
         header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
-                       "TrialType","TrialPeckNum", "TrialNum",
-                       "Subject", "ExpPhase", "Date"] # Column headers
+                       "TrialType","TargetPeckNum", "BackgroundPeckNum",
+                       "TrialNum", "TrialColor", "Subject", "ExpPhase",
+                       "Date"] # Column headers
         self.session_data_frame.append(header_list) # First row of matrix is the column headers
         self.date = date.today().strftime("%y-%m-%d")
         self.myFile_loc = 'FILL' # To be filled later on after Pig. ID is provided (in set vars func below)
@@ -378,7 +379,7 @@ class MainScreen(object):
             if self.subject_ID == "TEST": # If test, don't worry about ITI delays
                 self.ITI_duration = 1000
                 self.hopper_duration = 1000
-                self.root.after(10000, lambda: self.ITI())
+                self.root.after(1000, lambda: self.ITI())
             else:
                 self.root.after(30000, lambda: self.ITI())
 
@@ -446,6 +447,7 @@ class MainScreen(object):
             # Reset other variables for the following trial.
             self.trial_start = time() # Set trial start time (note that it includes the ITI, which is subtracted later)
             self.trial_peck_counter = 0 # Reset trial peck counter each trial
+            self.background_peck_counter = 0 # Also reset background counter
             
             self.write_comp_data(False) # update data .csv with trial data from the previous trial
             
@@ -488,20 +490,24 @@ class MainScreen(object):
         # NOT count as background pecks but as key pecks, because the object is
         # covering that part of the background. Once a peck is made, an event line
         # is appended to the data matrix.
+        
+        # Border...
         self.mastercanvas.create_rectangle(0,0,
                                            self.mainscreen_width,
                                            self.mainscreen_height,
                                            fill = "black",
                                            outline = "black",
                                            tag = "bkgrd")
+        # Button...
         self.mastercanvas.tag_bind("bkgrd",
                                    "<Button-1>",
-                                   lambda event, 
-                                   event_type = "background_peck": 
-                                       self.write_data(event, event_type))
+                                   lambda event: 
+                                       self.background_press(event))
         
         # Coordinates for all the keys
-        key_coord_list =  [384, 256, 640, 512]
+        # key_coord_list =  [384, 256, 640, 512]
+        key_coord_list =  [416, 288, 608, 480] # 75% = 192 d
+        #key_coord_list =  [448, 320, 576, 448] # 50% = 128 d
         midpoint_diameter = 10
         midpoint_coord_list = [
             key_coord_list[0] + ((key_coord_list[2] - key_coord_list[0]) // 2) - (midpoint_diameter//2),
@@ -510,9 +516,24 @@ class MainScreen(object):
             key_coord_list[1] + ((key_coord_list[3] - key_coord_list[1]) // 2) + (midpoint_diameter//2)
             ]
         
+        # Key outline around the key
+        outline_size = 20 # 25 pixels in every direction
+        outline_coords_list = [
+            key_coord_list[0] - outline_size,
+            key_coord_list[1] - outline_size,
+            key_coord_list[2] + outline_size,
+            key_coord_list[3] + outline_size
+            ]
+        
         # First up, build the actual circle that is the key and will
         # contain the stimulus. Order is important here, as shapes built
         # on top of each other will overlap/cover each other.
+        
+        self.mastercanvas.create_oval(outline_coords_list, 
+                                      outline = "black",
+                                      fill = "black",
+                                      tag = "key")
+        
         self.mastercanvas.create_oval(key_coord_list,
                                       outline = "black",
                                       fill = self.stimulus_assignments_dict[self.trial_type],
@@ -542,6 +563,15 @@ class MainScreen(object):
         self.trial_peck_counter += 1
         # Write data for the peck
         self.write_data(event, event_type)
+        
+
+    def background_press(self, event):
+        # This is the function that is called whenever the background is
+        # pressed. It simply increments the counter and writes a line of data.
+        # Add to background counter
+        self.background_peck_counter += 1
+        # Write data for the peck
+        self.write_data(event, "background_peck")
         
 
     def calculate_trial_outcome(self):
@@ -694,8 +724,10 @@ class MainScreen(object):
                     outcome, # Type of event (e.g., background peck, target presentation, session end, etc.)
                     round((time() - self.trial_start - (self.ITI_duration/1000)), 5), # Time into this trial minus ITI (if session ends during ITI, will be negative)
                     self.trial_type, # PAV, INS, OMS
-                    self.trial_peck_counter, # Count of pecks that trial
+                    self.trial_peck_counter, # Count of button pecks that trial
+                    self.background_peck_counter, # Background peck counter
                     self.current_trial_counter, # Trial count within session (1 - max # trials)
+                    self.stimulus_assignments_dict[self.trial_type], # Trial color
                     self.subject_ID, # Name of subject (same across datasheet)
                     self.exp_phase_name, # Phase name (e.g., RR2)
                     date.today() # Today's date as "MM-DD-YYYY"
@@ -707,8 +739,9 @@ class MainScreen(object):
                 pass
             
             header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
-                           "TrialType","TrialPeckNum", "TrialNum",
-                           "Subject", "ExpPhase", "Date"] # Column headers
+                           "TrialType","TargetPeckNum", "BackgroundPeckNum",
+                           "TrialNum", "TrialColor", "Subject", "ExpPhase",
+                           "Date"] # Column headers
             
         except AttributeError:
             print("-Error writing data...")
