@@ -133,13 +133,12 @@ class ExperimenterControlPanel(object):
         # personal computer. These include setting up the hopper object so it 
         # can be referenced in the future, or the location where data files
         # should be stored.
-        #if operant_box_version:
-        #    # Setup the data directory in "Documents"
-        #    self.doc_directory = str(os_path.expanduser('~'))+"/Documents/"
-        #    self.data_folder = "P034b_data" # The folder within Documents where subject data is kept
-        #    self.data_folder_directory = str(os_path.expanduser('~'))+"/OneDrive/Desktop/Data/" + self.data_folder
-        #else: # If not, just save in the current directory the program us being run in 
-        self.data_folder_directory = getcwd() + "/data"
+        if operant_box_version:
+            # Setup the data directory in "Documents"
+            self.data_folder = "P034b_data" # The folder within Documents where subject data is kept
+            self.data_folder_directory = str(os_path.expanduser('~'))+"/Desktop/Data/" + self.data_folder
+        else: # If not, just save in the current directory the program us being run in 
+            self.data_folder_directory = getcwd() + "/data"
         
         # setup the root Tkinter window
         self.control_window = Tk()
@@ -199,10 +198,12 @@ class ExperimenterControlPanel(object):
         # This function checks to see if a pigeon's data folder currently 
         # exists in the respective "data" folder within the Documents
         # folder and, if not, creates one.
-        parent_directory = getcwd() + "/data/"
-        if not os_path.isdir(parent_directory + pigeon_name):
-            mkdir(os_path.join(parent_directory, pigeon_name))
-            print("\n ** NEW DATA FOLDER FOR %s CREATED **" % pigeon_name.upper())
+        try:
+            if not os_path.isdir(self.data_folder_directory + pigeon_name):
+                mkdir(os_path.join(self.data_folder_directory, pigeon_name))
+                print("\n ** NEW DATA FOLDER FOR %s CREATED **" % pigeon_name.upper())
+        except FileExistsError:
+            print(f"DATA FOLDER FOR {pigeon_name.upper()} EXISTS")
                 
                 
     def build_chamber_screen(self):
