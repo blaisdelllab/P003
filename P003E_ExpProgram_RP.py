@@ -135,7 +135,7 @@ class ExperimenterControlPanel(object):
         # should be stored.
         if operant_box_version:
             # Setup the data directory in "Documents"
-            self.data_folder = "P034b_data" # The folder within Documents where subject data is kept
+            self.data_folder = "P003e_data" # The folder within Documents where subject data is kept
             self.data_folder_directory = str(os_path.expanduser('~'))+"/Desktop/Data/" + self.data_folder
         else: # If not, just save in the current directory the program us being run in 
             self.data_folder_directory = getcwd() + "/data"
@@ -760,7 +760,7 @@ class MainScreen(object):
         if SessionEnded:
             self.write_data(None, "SessionEnds") # Writes end of session to df
         if self.record_data : # If experimenter has choosen to automatically record data in seperate sheet:
-            myFile_loc = f"{self.data_folder_directory}/{self.subject_ID}/{self.subject_ID}_{self.start_time.strftime('%Y-%m-%d_%H.%M.%S')}_P034b_data-Phase-{self.exp_phase_name}.csv" # location of written .csv
+            myFile_loc = f"{self.data_folder_directory}/{self.subject_ID}/{self.subject_ID}_{self.start_time.strftime('%Y-%m-%d_%H.%M.%S')}_P003e_data-Phase-{self.exp_phase_name}.csv" # location of written .csv
             # This loop writes the data in the matrix to the .csv              
             edit_myFile = open(myFile_loc, 'w', newline='')
             with edit_myFile as myFile:
