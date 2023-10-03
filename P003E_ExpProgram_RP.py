@@ -3,7 +3,7 @@
 """
 Created on Mon Jan 9 2023
 
-Last updated: 2023-09-25
+Last updated: 2023-10-03
 
 @author: cyruskirkman & Megan C.
 
@@ -212,7 +212,7 @@ class ExperimenterControlPanel(object):
         # important inputs from the control panel.
         if self.subject_ID_variable.get() in self.pigeon_name_list:
             if self.exp_phase_variable.get() != "Select":
-                print(f"{'SESSION STARTED': ^15}")
+                print("Operant Box Screen Built") 
                 self.MS = MainScreen(
                     str(self.subject_ID_variable.get()), # subject_ID
                     self.record_data_variable.get(), # Boolean for recording data (or not)
@@ -318,6 +318,7 @@ class MainScreen(object):
             # objects off the mnainscreen (making it blank), unbinds the spacebar to 
             # the first_ITI link, followed by a 30s pause before the first trial to 
             # let birds settle in and acclimate.
+            print("Spacebar pressed -- SESSION STARTED") 
             self.mastercanvas.delete("all")
             self.root.unbind("<space>")
             self.start_time = datetime.now() # Set start time
@@ -705,48 +706,37 @@ class MainScreen(object):
         
     
     def write_data(self, event, outcome):
-        try:
             # This function writes a new data line after EVERY peck. Data is
             # organized into a matrix (just a list/vector with two dimensions,
             # similar to a table). This matrix is appended to throughout the 
             # session, then written to a .csv once at the end of the session.
-            try:
-                if event != None: 
-                    x, y = event.x, event.y
-                else: # There are certain data events that are not pecks.
-                    x, y = "NA", "NA"   
-                    
-                print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | {self.trial_type:^5} | {str(datetime.now() - self.start_time)}")
-                # print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | Target: {self.current_target_location: ^2} | {str(datetime.now() - self.start_time)}")
-                self.session_data_frame.append([
-                    str(datetime.now() - self.start_time), # SessionTime as datetime object
-                    x, # X coordinate of a peck
-                    y, # Y coordinate of a peck
-                    outcome, # Type of event (e.g., background peck, target presentation, session end, etc.)
-                    round((time() - self.trial_start - (self.ITI_duration/1000)), 5), # Time into this trial minus ITI (if session ends during ITI, will be negative)
-                    self.trial_type, # PAV, INS, OMS
-                    self.trial_peck_counter, # Count of button pecks that trial
-                    self.background_peck_counter, # Background peck counter
-                    self.current_trial_counter, # Trial count within session (1 - max # trials)
-                    self.stimulus_assignments_dict[self.trial_type], # Trial color
-                    self.subject_ID, # Name of subject (same across datasheet)
-                    self.exp_phase_name, # Phase name (e.g., RR2)
-                    date.today() # Today's date as "MM-DD-YYYY"
-                    ])
+            if event != None: 
+                x, y = event.x, event.y
+            else: # There are certain data events that are not pecks.
+                x, y = "NA", "NA"   
                 
-            except AttributeError:
-                # If a variable isn't set-up
-                print("Unable to save data...")
-                pass
-            
+            print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | {self.trial_type:^5} | {str(datetime.now() - self.start_time)}")
+            # print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | Target: {self.current_target_location: ^2} | {str(datetime.now() - self.start_time)}")
+            self.session_data_frame.append([
+                str(datetime.now() - self.start_time), # SessionTime as datetime object
+                x, # X coordinate of a peck
+                y, # Y coordinate of a peck
+                outcome, # Type of event (e.g., background peck, target presentation, session end, etc.)
+                round((time() - self.trial_start - (self.ITI_duration/1000)), 5), # Time into this trial minus ITI (if session ends during ITI, will be negative)
+                self.trial_type, # PAV, INS, OMS
+                self.trial_peck_counter, # Count of button pecks that trial
+                self.background_peck_counter, # Background peck counter
+                self.current_trial_counter, # Trial count within session (1 - max # trials)
+                self.stimulus_assignments_dict[self.trial_type], # Trial color
+                self.subject_ID, # Name of subject (same across datasheet)
+                self.exp_phase_name, # Phase name (e.g., RR2)
+                date.today() # Today's date as "MM-DD-YYYY"
+                ])
+        
             header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
                            "TrialType","TargetPeckNum", "BackgroundPeckNum",
                            "TrialNum", "TrialColor", "Subject", "ExpPhase",
                            "Date"] # Column headers
-            
-        except AttributeError:
-            print("-Error writing data...")
-            pass
 
         
     def write_comp_data(self, SessionEnded):
