@@ -286,7 +286,7 @@ class MainScreen(object):
         self.start_time = None # This will be reset once the session actually starts
         self.trial_start = None # Duration into each trial as a second count, resets each trial
         self.ITI_duration = 6000 # duration of inter-trial interval (ms)
-        self.hopper_duration = 3000 # duration of accessible hopper(ms)
+        self.hopper_duration = 5000 # duration of accessible hopper(ms)
         self.trial_timer_duration = 10000 # Duration of each trial (ms)
         self.current_trial_counter = 0 # counter for current trial in session
         self.trial_stage = 0 # Trial substage (4 within DMTO)
@@ -454,7 +454,7 @@ class MainScreen(object):
             self.write_comp_data(False) # update data .csv with trial data from the previous trial
             
             # First pick the trial type from the prexisting list....
-            self.trial_type = self.trial_assignment_list[self.current_trial_counter]
+            self.trial_type = self.trial_assignment_list[self.current_trial_counter - 1]
    
             # Increase trial counter by one
             self.current_trial_counter += 1
