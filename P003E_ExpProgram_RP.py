@@ -3,7 +3,7 @@
 """
 Created on Mon Jan 9 2023
 
-Last updated: 2023-10-03
+Last updated: 2023-10-04
 
 @author: cyruskirkman & Megan C.
 
@@ -295,7 +295,7 @@ class MainScreen(object):
         # These are additional "under the hood" variables that need to be declared
         self.max_trials = 180 # Max number of trials within a session
         self.session_data_frame = [] #This where trial-by-trial data is stored
-        self.trials_completed = 0 # This counts the number of trials that have passed
+        self.current_trial_counter = 0 # This counts the number of trials that have passed
         header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
                        "TrialType","TargetPeckNum", "BackgroundPeckNum",
                        "TrialNum", "TrialColor", "Subject", "ExpPhase",
@@ -431,7 +431,7 @@ class MainScreen(object):
 
         # First, check to see if any session limits have been reached (e.g.,
         # if the max time or reinforcers earned limits are reached).
-        if  self.trials_completed > self.max_trials:
+        if self.current_trial_counter == self.max_trials:
             print("Trial max reached")
             self.exit_program("event")
         
