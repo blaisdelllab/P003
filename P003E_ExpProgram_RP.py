@@ -283,8 +283,8 @@ class MainScreen(object):
             self.mastercanvas.pack()
         
         # Timing variables
-        self.start_time = None # This will be reset once the session actually starts
-        self.trial_start = None # Duration into each trial as a second count, resets each trial
+        self.start_time = datetime.now()  # This will be reset once the session actually starts
+        self.trial_start = datetime.now() # Duration into each trial as a second count, resets each trial
         self.ITI_duration = 6000 # duration of inter-trial interval (ms)
         self.hopper_duration = 5000 # duration of accessible hopper(ms)
         self.trial_timer_duration = 10000 # Duration of each trial (ms)
