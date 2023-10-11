@@ -3,7 +3,7 @@
 """
 Created on Mon Jan 9 2023
 
-Last updated: 2023-10-04
+Last updated: 2023-10-11
 
 @author: cyruskirkman & Megan C.
 
@@ -323,7 +323,7 @@ class MainScreen(object):
             self.root.unbind("<space>")
             self.start_time = datetime.now() # Set start time
             self.trial_cue_color = None
-            self.trial_type = None
+            self.trial_type = "NA"
             
             # First set up the path to the stimulus identity .csv document
             stimuli_csv_path = getcwd() + "/P003E_stimuli_assignments.csv"
@@ -381,9 +381,9 @@ class MainScreen(object):
             if self.subject_ID == "TEST": # If test, don't worry about ITI delays
                 self.ITI_duration = 1000
                 self.hopper_duration = 1000
-                self.root.after(1000, lambda: self.ITI())
+                self.root.after(1000, self.ITI)
             else:
-                self.root.after(30000, lambda: self.ITI())
+                self.root.after(30000, self.ITI)
 
 
         # The runs first, setting up the spacebar trigger
@@ -401,7 +401,7 @@ class MainScreen(object):
     #   3) Increases the trial counter by one
     #   4) Moves on to the next trial after a delay
     # 
-    def ITI (self):
+    def ITI(self):
         # This function just clear the screen. It will be used a lot in the future, too.
         self.clear_canvas()
         
@@ -459,15 +459,64 @@ class MainScreen(object):
             # Increase trial counter by one
             self.current_trial_counter += 1
             
-            # Next, set a delay timer to proceed to the next trial
-            self.root.after(self.ITI_duration, self.build_keys)
+            if self.current_trial_counter == 1:
+                self.root.after(self.ITI_duration, self.start_signal_period)
+            else:
+                # Next, set a delay timer to proceed to the next trial
+                self.root.after(self.ITI_duration, self.build_keys)
                 
             # Finally, print terminal feedback "headers" for each event within the next trial
             print(f"\n{'*'*30} Trial {self.current_trial_counter} begins {'*'*30}") # Terminal feedback...
             print(f"{'Event Type':>30} | Xcord. Ycord. | Trial | Session Time")
-            
+    
         
     #%%  
+    """
+    This function is called one single time at the very beginning of the
+    session. It simply builds a blank square and requires one peck to start 
+    the program. This was called to make sure that pigeons were "ready" to 
+    start the session, given that trials progressed on a timer. More info
+    about building Canvas widgets in the following section.
+    """
+    def start_signal_period(self):
+        # We need to turn on the houselight as soon as the trial starts
+        if operant_box_version:
+            rpi_board.write(house_light_GPIO_num, True) # Turn off house light
+        # Border...
+        self.mastercanvas.create_rectangle(0,0,
+                                           self.mainscreen_width,
+                                           self.mainscreen_height,
+                                           fill = "black",
+                                           outline = "black",
+                                           tag = "bkgrd")
+        # Make it a button
+        self.mastercanvas.tag_bind("bkgrd",
+                                   "<Button-1>",
+                                   lambda event: 
+                                       self.background_press(event))
+        
+        # Next build the actual cue
+        key_coord_list =  [416, 288, 608, 480]
+        self.mastercanvas.create_rectangle(key_coord_list,
+                                      outline = "black",
+                                      fill = "white",
+                                      tag = "key")
+
+        # Then bind a function to a key press!
+        self.mastercanvas.tag_bind("key",
+                                   "<Button-1>",
+                                   lambda event, 
+                                   event_type = "start_signal_press": 
+                                       self.start_signal_press(event, event_type))
+            
+    def start_signal_press(self, event, event_type):
+        # Write data for the peck
+        self.write_data(event, event_type)
+        self.clear_canvas()
+        # Proceed to the first trial after 1 s
+        self.root.after(1000, self.build_keys)
+        
+    
     """
     The code below is very straightforward. It builds the key for the specific
     trial, ties a function to the background and key, and then starts a 10s 
@@ -476,6 +525,10 @@ class MainScreen(object):
     """
         
     def build_keys(self):
+        # Reset trial time as soon as keys are built if 
+        if self.current_trial_counter == 1:
+            self.trial_start = time() - (self.ITI_duration/1000)# Set trial start time (note that it includes the ITI, which is subtracted later)
+        
         # This is a function that builds the all the buttons on the Tkinter
         # Canvas. The Tkinter code (and geometry) may appear a little dense
         # here, but it follows many of the same rules. Al keys will be built
