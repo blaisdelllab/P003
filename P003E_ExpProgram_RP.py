@@ -3,7 +3,7 @@
 """
 Created on Mon Jan 9 2023
 
-Last updated: 2023-10-11
+Last updated: 2023-10-20
 
 @author: cyruskirkman & Megan C.
 
@@ -286,11 +286,16 @@ class MainScreen(object):
         self.start_time = datetime.now()  # This will be reset once the session actually starts
         self.trial_start = datetime.now() # Duration into each trial as a second count, resets each trial
         self.ITI_duration = 6000 # duration of inter-trial interval (ms)
-        self.hopper_duration = 5000 # duration of accessible hopper(ms)
         self.trial_timer_duration = 10000 # Duration of each trial (ms)
         self.current_trial_counter = 0 # counter for current trial in session
         self.trial_stage = 0 # Trial substage (4 within DMTO)
-        
+        # Selective hopper timing by subject...
+        if self.subject_ID in ["Joplin", "Evaristo"]:
+            self.hopper_duration = 5000 # duration of accessible hopper(ms)
+        elif self.subject_ID == "Meat Loaf":
+            self.hopper_duration = 7000 # duration of accessible hopper(ms)
+        else:
+            self.hopper_duration = 4000 # duration of accessible hopper(ms)
 
         # These are additional "under the hood" variables that need to be declared
         self.max_trials = 180 # Max number of trials within a session
