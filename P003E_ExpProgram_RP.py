@@ -3,7 +3,7 @@
 """
 Created on Mon Jan 9 2023
 
-Last updated: 2023-10-20
+Last updated: 2023-11-21
 
 @author: cyruskirkman & Megan C.
 
@@ -13,9 +13,10 @@ and temoporal response variability. It also accounted for proximity to
 reinforcement by modifying the number of responses to reach each trial's
 outcome; this manipulation occured each phase.
 
-All subjects underwent three phases: RR2, RR5, and RR10. Across each session
-of each phase, trials could be one of three types (the reinforcement schedules
-described above), differentiated by stimulus color--nine distinct colors were
+All subjects underwent three phases: RR2, RR5, and RR20 (changed from RR10 after
+we found that it was too low). Across each session of each phase, trials could
+be one of three types (the reinforcement schedules described above), 
+differentiated by stimulus color--nine distinct colors were
 counter-balanced across twelve subjects. 
 
 Each trial lasted 10 seconds. Within these 10 s, responses on and off the
@@ -161,7 +162,7 @@ class ExperimenterControlPanel(object):
 
         
         # Exp phases
-        self.experimental_phase_titles = ["RR2", "RR5", "RR10"]
+        self.experimental_phase_titles = ["RR2", "RR5", "RR20"]
         
         Label(self.control_window, text="Experimental Phase:").pack()
         self.exp_phase_variable = StringVar(self.control_window)
@@ -218,7 +219,7 @@ class ExperimenterControlPanel(object):
                     self.record_data_variable.get(), # Boolean for recording data (or not)
                     self.data_folder_directory, # directory for data folder
                     self.exp_phase_variable.get(), # Exp phase name
-                    self.experimental_phase_titles.index(self.exp_phase_variable.get()) # Exp Phase number (0 through 2; 0-RR2, 1-RR5, 2-RR10)
+                    self.experimental_phase_titles.index(self.exp_phase_variable.get()) # Exp Phase number (0 through 2; 0-RR2, 1-RR5, 2-RR20)
                     )
             else:
                 print("\n ERROR: Input Stimulus Set Before Starting Session")
@@ -241,7 +242,7 @@ class MainScreen(object):
         
         # Setup experimental phase
         self.exp_phase_name = exp_phase_name # e.g., "RR2"
-        self.exp_phase_num = exp_phase_num # e.g., 0 (0 through 2; 0-RR2, 1-RR5, 2-RR10)
+        self.exp_phase_num = exp_phase_num # e.g., 0 (0 through 2; 0-RR2, 1-RR5, 2-RR20)
         
         # Setup data directory
         self.data_folder_directory = data_folder_directory
@@ -653,7 +654,7 @@ class MainScreen(object):
                 reinforced = True
             
             # Run a simulation of a dice being rolled...
-            rr_sched = int(self.exp_phase_name[2:]) # 2, 5, or 10
+            rr_sched = int(self.exp_phase_name[2:]) # 2, 5, or 20
             # Roll a die a number of times equal to the number of pecks
             # recorded within that trial
             for iteration in list(range(0, self.trial_peck_counter)): 
