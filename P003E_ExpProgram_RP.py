@@ -3,7 +3,7 @@
 """
 Created on Mon Jan 9 2023
 
-Last updated: 2023-11-21
+Last updated: 2024-01-09
 
 @author: cyruskirkman & Megan C.
 
@@ -295,6 +295,8 @@ class MainScreen(object):
             self.hopper_duration = 5000 # duration of accessible hopper(ms)
         elif self.subject_ID == "Meat Loaf":
             self.hopper_duration = 7000 # duration of accessible hopper(ms)
+        if self.subject_ID in ["Herriot", "Jubilee"]:
+            self.hopper_duration = 3000 # duration of accessible hopper(ms)
         else:
             self.hopper_duration = 4000 # duration of accessible hopper(ms)
 
