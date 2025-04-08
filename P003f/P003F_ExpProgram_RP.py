@@ -148,7 +148,7 @@ class ExperimenterControlPanel(object):
         # Subject ID
         self.pigeon_name_list = ["Durrell", "Peach", "Hendrix", "Joplin",
                                  "Wenchang", "Herriot", "Kurt", "Luigi",
-                                 "Sting", "Waluigi", "Mario", "Evaristo"]
+                                 "Sting", "Wario", "Mario", "Evaristo"]
         self.pigeon_name_list.sort() # This alphabetizes the list
         self.pigeon_name_list.insert(0, "TEST")
         
