@@ -5,7 +5,7 @@ Created on Mon Jan 9 2023
 
 Last updated: 2025-04-07
 
-@author: cyruskirkman & Megan C.
+@author: Megan C. & Cyrus K.
 
 This project investigated the roles of various scedules of reinforcement 
 (Pavlovian, instrumental, and omission contingencies) in dictating spatial 
