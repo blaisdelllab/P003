@@ -1,11 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
+P003f - Behavioral Variability Under Omission, Instrumental,
+Pavlovian, and Extinction Contingencies
+----------------------------------------------------------
+
 Created on Mon Jan 9 2023
 
-Last updated: 2025-04-07
+Last updated: 2025-04-09
 
-@author: Megan C. & Cyrus K.
+@authors: Megan C. & Cyrus K.
 
 This project investigated the roles of various scedules of reinforcement 
 (Pavlovian, instrumental, and omission contingencies) in dictating spatial 
@@ -287,7 +291,6 @@ class MainScreen(object):
         self.trial_start = datetime.now() # Duration into each trial as a second count, resets each trial
         self.ITI_duration = 6000 # duration of inter-trial interval (ms)
         self.trial_timer_duration = 10000 # Duration of each trial (ms)
-        self.current_trial_counter = 0 # counter for current trial in session
         self.trial_stage = 0 # Trial substage (4 within DMTO)
         # Selective hopper timing by subject...
         # if self.subject_ID in ["Joplin", "Evaristo"]:
@@ -475,7 +478,7 @@ class MainScreen(object):
             self.write_comp_data(False) # update data .csv with trial data from the previous trial
             
             # First pick the trial type from the prexisting list....
-            self.trial_type = self.trial_assignment_list[self.current_trial_counter - 1]
+            self.trial_type = self.trial_assignment_list[self.current_trial_counter]
    
             # Increase trial counter by one
             self.current_trial_counter += 1
@@ -867,7 +870,7 @@ class MainScreen(object):
                 y, # Y coordinate of a peck
                 outcome, # Type of event (e.g., background peck, target presentation, session end, etc.)
                 round((time() - self.trial_start - (self.ITI_duration/1000)), 5), # Time into this trial minus ITI (if session ends during ITI, will be negative)
-                self.trial_assignment_list[self.current_trial_counter - 1], # Store full trial type (INS_2, OMS_5, etc.)
+                self.trial_type, # Store full trial type (INS_2, OMS_5, etc.)
                 self.trial_peck_counter, # Count of button pecks that trial
                 self.background_peck_counter, # Background peck counter
                 self.hidden_patch_peck_counter, # Hidden patch counters
