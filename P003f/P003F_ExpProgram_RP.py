@@ -7,7 +7,7 @@ Pavlovian, and Extinction Contingencies
 
 Created on Mon Jan 9 2023
 
-Last updated: 2025-04-09
+Last updated: 2025-04-15
 
 @authors: Megan C. & Cyrus K.
 
@@ -873,7 +873,6 @@ class MainScreen(object):
                 self.trial_type, # Store full trial type (INS_2, OMS_5, etc.)
                 self.trial_peck_counter, # Count of button pecks that trial
                 self.background_peck_counter, # Background peck counter
-                self.hidden_patch_peck_counter, # Hidden patch counters
                 self.current_trial_counter, # Trial count within session (1 - max # trials)
                 self.stimulus_assignments_dict[self.trial_type], # Trial color
                 self.subject_ID, # Name of subject (same across datasheet)
@@ -883,7 +882,7 @@ class MainScreen(object):
         
             header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
                            "TrialType","TargetPeckNum", "BackgroundPeckNum",
-                           "HiddenPatchPeckNum"," TrialNum", "TrialColor",
+                           "TrialNum", "TrialColor",
                            "Subject", "Date"] # Column headers
 
         
