@@ -715,7 +715,7 @@ class MainScreen(object):
         # pressed. It simply increments the counter and writes a line of data.
         self.hidden_patch_peck_counter += 1
         # Write data for the peck
-        self.write_data(event, "hidden_patch_peck")
+        self.write_data(event, f"hidden_patch_peck_{self.hidden_patch_location}")
         
         
 
