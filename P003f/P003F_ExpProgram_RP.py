@@ -309,7 +309,7 @@ class MainScreen(object):
         header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
                        "TrialType","TargetPeckNum", "BackgroundPeckNum",
                        "TrialNum", "TrialColor", "Subject",
-                       "Date"] # Column headers
+                       "HiddenPatch", "Date"] # Column headers
         self.session_data_frame.append(header_list) # First row of matrix is the column headers
         self.date = date.today().strftime("%y-%m-%d")
         self.myFile_loc = 'FILL' # To be filled later on after Pig. ID is provided (in set vars func below)
@@ -715,7 +715,7 @@ class MainScreen(object):
         # pressed. It simply increments the counter and writes a line of data.
         self.hidden_patch_peck_counter += 1
         # Write data for the peck
-        self.write_data(event, f"hidden_patch_peck_{self.hidden_patch_location}")
+        self.write_data(event, "hidden_patch_peck", self.hidden_patch_location)
         
         
 
@@ -852,7 +852,7 @@ class MainScreen(object):
             polygon_fill.main(self.subject_ID) # call paint object
         
     
-    def write_data(self, event, outcome):
+    def write_data(self, event, outcome, hidden_patch="NA"):
             # This function writes a new data line after EVERY peck. Data is
             # organized into a matrix (just a list/vector with two dimensions,
             # similar to a table). This matrix is appended to throughout the 
@@ -876,14 +876,14 @@ class MainScreen(object):
                 self.current_trial_counter, # Trial count within session (1 - max # trials)
                 self.stimulus_assignments_dict[self.trial_type], # Trial color
                 self.subject_ID, # Name of subject (same across datasheet)
-                # self.exp_phase_name, # Phase name (e.g., RR2)
+                hidden_patch, # Hidden Patch
                 date.today() # Today's date as "MM-DD-YYYY"
                 ])
         
             header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
                            "TrialType","TargetPeckNum", "BackgroundPeckNum",
                            "TrialNum", "TrialColor",
-                           "Subject", "Date"] # Column headers
+                           "Subject", "HiddenPatch", "Date"] # Column headers
 
         
     def write_comp_data(self, SessionEnded):
