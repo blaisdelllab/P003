@@ -17,10 +17,11 @@ All subjects underwent a single phase consisting of stimuli defined by either
 instrumental or omission RR2, RR5, RR20, and RR50 reward contingencies. 
 Across each condition, trials could be one of four types (the reinforcement 
 schedules described above), differentiated by stimulus color--four distinct 
-color patterns counter-balanced across four groups of twelve subjects. 
+color patterns counter-balanced across two groups of four subjects. 
 
-Each trial lasted 10 seconds. Within these 10 s, responses on and off the
-presented cue were tracked and could impact the outcome of the trial.
+Each trial lasted 10 seconds, and each ITI lasted 30 seconds. Within these 
+10 s, responses on and off the presented cue were tracked and could impact 
+the outcome of the trial.
 """
 # Prior to running any code, its conventional to first import relevant 
 # libraries for the entire script. These can range from python libraries (sys)
