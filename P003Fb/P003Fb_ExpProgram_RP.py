@@ -337,7 +337,11 @@ class MainScreen(object):
             }
 
             # 2) Preload each PNG into PhotoImages
-            stimuli_folder = os_path.expanduser("~/Desktop/P003Fb/stimuli/")
+            # ---- work out the folder that contains *this* .py file ------------
+            script_dir = os_path.dirname(os_path.abspath(__file__))          # …/P003/P003Fb
+            # ---- stimuli folder sits right next to this script ----------------
+            stimuli_folder = os_path.join(script_dir, "stimuli")             # …/P003/P003Fb/stimuli
+            # ------------------------------------------------------------------
 
             KEY_PIXELS = 192          # ← hard-code the size you want
 
