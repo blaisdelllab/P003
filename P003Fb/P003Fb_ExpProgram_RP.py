@@ -137,14 +137,14 @@ class ExperimenterControlPanel(object):
         # should be stored.
         if operant_box_version:
             # Setup the data directory in "Documents"
-            self.data_folder = "P003fb_data" # The folder within Documents where subject data is kept
+            self.data_folder = "P003Fb_data" # The folder within Documents where subject data is kept
             self.data_folder_directory = str(os_path.expanduser('~'))+"/Desktop/Data/" + self.data_folder
         else: # If not, just save in the current directory the program us being run in 
             self.data_folder_directory = getcwd() + "/data"
         
         # setup the root Tkinter window
         self.control_window = Tk()
-        self.control_window.title("P003fb Control Panel")
+        self.control_window.title("P003Fb Control Panel")
         ##  Next, setup variables within the control panel
         # Subject ID
         self.pigeon_name_list = ["Herriot", "Peach", "Wario", "Kurt",
@@ -243,7 +243,7 @@ class MainScreen(object):
 
         # Set up the visual Canvas
         self.root = Toplevel() 
-        self.root.title("P003fb: Spatial Variability")
+        self.root.title("P003Fb: Spatial Variability")
         self.mainscreen_height = 768 # height of the experimental canvas screen
         self.mainscreen_width = 1024 # width of the experimental canvas screen
         self.root.bind("<Escape>", self.exit_program) # bind exit program to the "esc" key
