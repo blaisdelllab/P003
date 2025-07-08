@@ -812,7 +812,7 @@ class MainScreen(object):
         if SessionEnded:
             self.write_data(None, "SessionEnds") # Writes end of session to df
         if self.record_data : # If experimenter has choosen to automatically record data in seperate sheet:
-            myFile_loc = f"{self.data_folder_directory}/{self.subject_ID}/{self.subject_ID}_{self.start_time.strftime('%Y-%m-%d_%H.%M.%S')}_P003F_data.csv"
+            myFile_loc = f"{self.data_folder_directory}/{self.subject_ID}/{self.subject_ID}_{self.start_time.strftime('%Y-%m-%d_%H.%M.%S')}_P003Fb_data.csv"
             # This loop writes the data in the matrix to the .csv              
             edit_myFile = open(myFile_loc, 'w', newline='')
             with edit_myFile as myFile:
