@@ -276,7 +276,7 @@ class MainScreen(object):
         # Timing variables
         self.start_time = datetime.now()  # This will be reset once the session actually starts
         self.trial_start = datetime.now() # Duration into each trial as a second count, resets each trial
-        self.ITI_duration = 1000 # duration of inter-trial interval (ms)
+        self.ITI_duration = 30000 # duration of inter-trial interval (ms) -> 30 s 
         self.trial_timer_duration = 10000 # Duration of each trial (ms)
         self.current_trial_counter = 0 # counter for current trial in session
         self.trial_stage = 0 # Trial substage (4 within DMTO)
