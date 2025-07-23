@@ -459,7 +459,6 @@ class MainScreen(object):
             self.trial_start = time() # Set trial start time (note that it includes the ITI, which is subtracted later)
             self.trial_peck_counter = 0 # Reset trial peck counter each trial
             self.background_peck_counter = 0 # Also reset background counter
-            self.hidden_patch_peck_counter = 0 # And hidden patch trials
             
             self.write_comp_data(False) # update data .csv with trial data from the previous trial
             
@@ -771,7 +770,7 @@ class MainScreen(object):
             polygon_fill.main(self.subject_ID) # call paint object
         
     
-    def write_data(self, event, outcome, hidden_patch="NA"):
+    def write_data(self, event, outcome="NA"):
             # This function writes a new data line after EVERY peck. Data is
             # organized into a matrix (just a list/vector with two dimensions,
             # similar to a table). This matrix is appended to throughout the 
@@ -795,7 +794,6 @@ class MainScreen(object):
                 self.current_trial_counter,           # TrialNum 
                 self.stimulus_assignments_dict[self.trial_type],  # TrialColor 
                 self.subject_ID,                      # Subject 
-                hidden_patch,                         # Hidden Patch
                 date.today()                          # Date 
             ])
         
