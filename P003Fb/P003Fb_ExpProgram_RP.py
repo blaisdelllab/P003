@@ -318,6 +318,7 @@ class MainScreen(object):
             self.start_time = datetime.now()
             self.trial_type = "NA"
 
+            # Now, we need to input the stimuli assignment images 
             # 1) Read per‐subject CSV to get PNG filenames
             script_dir = getcwd()
             csv_path = os_path.join(script_dir, "P003Fb_stimulus_assignments.csv")
@@ -325,7 +326,6 @@ class MainScreen(object):
                 reader = DictReader(f)
                 row = next(r for r in reader if r["Subject"] == self.subject_ID)
 
-            # only keep the non-empty trial-types
             all_trial_types = [
                 "INS_2","INS_5","INS_20","INS_50",
                 "OMS_2","OMS_5","OMS_20","OMS_50"
@@ -337,13 +337,12 @@ class MainScreen(object):
             }
 
             # 2) Preload each PNG into PhotoImages
-            # ---- work out the folder that contains *this* .py file ------------
+            # We need to work out the folder that contains *this* .py file: 
             script_dir = os_path.dirname(os_path.abspath(__file__))          # …/P003/P003Fb
-            # ---- stimuli folder sits right next to this script ----------------
+            # The stimuli folder sits right next to this script:
             stimuli_folder = os_path.join(script_dir, "stimuli")             # …/P003/P003Fb/stimuli
-            # ------------------------------------------------------------------
 
-            KEY_PIXELS = 192          # ← hard-code the size you want
+            KEY_PIXELS = 192          # size of stimuli, same as previous experiments (P003e/P003f)
 
             self.stimulus_images = {}
             for tt, fname in self.stimulus_assignments_dict.items():
@@ -360,7 +359,7 @@ class MainScreen(object):
             potential_trial_assignments = [
                 "INS_2", "INS_5", "INS_20", "INS_50",
                 "OMS_2", "OMS_5", "OMS_20", "OMS_50"
-            ] * 20                       # 160 → we'll filter down to 80 next
+            ] * 20                       # 160 total
 
             # keep only trials that match this bird’s between-subjects condition
             potential_trial_assignments = [
@@ -368,7 +367,7 @@ class MainScreen(object):
                 if tt.startswith(self.phase_type)         # "INS" or "OMS"
             ]
 
-            # Now we have 4 distinct trial codes × 20 each  →  80 elements
+            # Now we have 4 distinct trial codes × 20 each  =  80 elements
             # Shuffle until no FOUR IDENTICAL trial codes appear consecutively
             while True:
                 shuffle(potential_trial_assignments)
@@ -395,7 +394,7 @@ class MainScreen(object):
                 self.root.after(2000, self.ITI)
 
 
-        # The runs first, setting up the spacebar trigger
+        # This runs first, setting up the spacebar trigger
         self.root.bind("<space>", first_ITI) # bind cursor state to "space" key
         self.mastercanvas.create_text(512,374,
                                       fill="white",
@@ -506,6 +505,14 @@ class MainScreen(object):
         
         # Next build the actual cue
         key_coord_list =  [416, 288, 608, 480]
+        # Key outline around the key
+        outline_size = 20  # pixels beyond key circle
+        outline_coords_list = [
+            key_coord_list[0] - outline_size,
+            key_coord_list[1] - outline_size,
+            key_coord_list[2] + outline_size,
+            key_coord_list[3] + outline_size
+        ]
         self.mastercanvas.create_rectangle(key_coord_list,
                                       outline = "black",
                                       fill = "white",
