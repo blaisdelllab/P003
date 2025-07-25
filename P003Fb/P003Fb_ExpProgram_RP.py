@@ -3,7 +3,7 @@
 """
 Created on Mon Jan 9 2023
 
-Last updated: 2025-04-08
+Last updated: 2025-07-25
 
 @author: Megan C. & Cyrus K.
 
@@ -524,8 +524,16 @@ class MainScreen(object):
                                    lambda event, 
                                    event_type = "start_signal_press": 
                                        self.start_signal_press(event, event_type))
-            
+
+        # Timer if start signal press hasn't been pecked at for 5 minutes 
+        self.auto_start_id = self.root.after(300_000, self.build_keys)
+
+
     def start_signal_press(self, event, event_type):
+        # Cancel the auto-start timer if it’s still pending
+        if hasattr(self, "auto_start_id"):
+            self.root.after_cancel(self.auto_start_id)
+
         # Write data for the peck
         self.write_data(event, event_type)
         self.clear_canvas()
