@@ -148,7 +148,7 @@ class ExperimenterControlPanel(object):
         ##  Next, setup variables within the control panel
         # Subject ID
         self.pigeon_name_list = ["Herriot", "Peach", "Wario", "Kurt",
-                                 "Hendrix", "Evaristo", "Iggy", "Hawthorne"]
+                                 "Hendrix", "Itzamna", "Iggy", "Hawthorne"]
         self.pigeon_name_list.sort() # This alphabetizes the list
         self.pigeon_name_list.insert(0, "TEST")
         
@@ -281,7 +281,7 @@ class MainScreen(object):
         self.current_trial_counter = 0 # counter for current trial in session
         self.trial_stage = 0 # Trial substage (4 within DMTO)
         # Selective hopper timing by subject...
-        # if self.subject_ID in ["Joplin", "Evaristo"]:
+        # if self.subject_ID in ["Joplin"]:
            # self.hopper_duration = 5000 # duration of accessible hopper(ms)
         # elif self.subject_ID == "Meat Loaf":
            # self.hopper_duration = 7000 # duration of accessible hopper(ms)
