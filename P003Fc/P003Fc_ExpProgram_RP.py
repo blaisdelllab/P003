@@ -400,7 +400,7 @@ class MainScreen(object):
         self.mastercanvas.create_text(512,374,
                                       fill="white",
                                       font="Times 25 italic bold",
-                                      text=f"P003Fb \n"
+                                      text=f"P003Fc \n"
                                             "Place bird in box, then press space \n"
                                             f"Subject: {self.subject_ID}\n"
                                             f"Condition: {self.phase_type}")
