@@ -3,7 +3,7 @@
 """
 Created on Friday August 29 2025
 
-Last updated: 2025-09-03
+Last updated: 2025-09-17
 
 @author: Megan C. & Cyrus K.
 
@@ -13,6 +13,10 @@ variability using a between-subjects design.
 It also accounted for proximity to reinforcement by modifying the number of 
 responses to reach each trial's outcome; this manipulation occured each phase.
 
+Omission conditions for subjects Itzamna and Peach contained one FR2 
+Instrumental cue to force them to interact with the screen instead of 
+witholding responses during trials.
+
 All subjects underwent a single phase consisting of stimuli defined by either 
 instrumental or omission RR2, RR5, RR20, and RR50 reward contingencies. 
 Across each condition, trials could be one of four types (the reinforcement 
@@ -20,7 +24,7 @@ schedules described above), differentiated by stimulus color--four distinct
 color patterns counter-balanced across two groups of four subjects. 
 
 Each trial lasted 10 seconds, and each ITI lasted 30 seconds. Within these 
-10 s, responses on and off the presented cue were tracked and could impact 
+10s, responses on and off the presented cue were tracked and could impact 
 the outcome of the trial.
 """
 # Prior to running any code, its conventional to first import relevant 
@@ -368,6 +372,20 @@ class MainScreen(object):
                 if tt.startswith(self.phase_type)         # "INS" or "OMS"
             ]
 
+            # NEW: add FR2 purple stimulus for Peach/Itzamna in OMS
+            if (self.phase_type == "OMS") and (self.subject_ID in ["Itzamna", "Peach"]):
+                self.stimulus_assignments_dict["INSFR_2"] = "Purple.png"
+                potential_trial_assignments += ["INSFR_2"] * 20
+
+                # preload purple image
+                purple_path = os_path.join(stimuli_folder, "Purple.png")
+                pil_img = (
+                    Image.open(purple_path)
+                         .convert("RGBA")
+                         .resize((KEY_PIXELS, KEY_PIXELS), Image.LANCZOS)
+                )
+                self.stimulus_images["INSFR_2"] = ImageTk.PhotoImage(pil_img)
+
             # Now we have 4 distinct trial codes × 20 each  →  80 elements
             # Shuffle until no FOUR IDENTICAL trial codes appear consecutively
             while True:
@@ -383,6 +401,9 @@ class MainScreen(object):
                 if not bad_run_found:
                     self.trial_assignment_list = potential_trial_assignments[:]   # full 80
                     break            # good order found; leave the while-loop
+
+            # Adjust max_trials if FR2 added (total length may be 100)
+            self.max_trials = len(self.trial_assignment_list)
 
             # After the order of stimuli per trial is determined, we can start.
             # If running a test session, the duration of intervals can be 
@@ -462,7 +483,6 @@ class MainScreen(object):
             self.trial_start = time() # Set trial start time (note that it includes the ITI, which is subtracted later)
             self.trial_peck_counter = 0 # Reset trial peck counter each trial
             self.background_peck_counter = 0 # Also reset background counter
-            self.hidden_patch_peck_counter = 0 # And hidden patch trials
             
             self.write_comp_data(False) # update data .csv with trial data from the previous trial
             
@@ -630,8 +650,11 @@ class MainScreen(object):
             lambda event, event_type="key_peck": self.key_press(event, event_type))
             
         # Lastly, start a timer for the trial
-        self.trial_timer = self.root.after(self.trial_timer_duration,
-                                   self.calculate_trial_outcome)
+        if self.trial_type == "INSFR_2":
+            self.trial_timer = None
+        else:
+            self.trial_timer = self.root.after(self.trial_timer_duration,
+                                       self.calculate_trial_outcome)
 
     def key_press(self, event, event_type):
         # This is the function that is called whenever a key is pressed. It
@@ -640,6 +663,23 @@ class MainScreen(object):
         self.trial_peck_counter += 1
         # Write data for the peck
         self.write_data(event, event_type)
+
+        if self.trial_type == "INSFR_2" and self.trial_peck_counter >= 2:
+            self.clear_canvas()
+            self.write_data(None, "reinforced_trial")
+            if not operant_box_version or self.subject_ID == "TEST":
+                self.mastercanvas.create_text(512,374,
+                                              fill="white",
+                                              font="Times 25 italic bold", 
+                                              text=f"Trial Reinforced \nFood accessible ({int(self.hopper_duration/1000)} s)")
+            if operant_box_version:
+                rpi_board.write(house_light_GPIO_num,
+                                False)
+                rpi_board.write(hopper_light_GPIO_num,
+                                True)
+                rpi_board.set_servo_pulsewidth(servo_GPIO_num,
+                                               hopper_up_val)
+            self.root.after(self.hopper_duration, lambda: self.ITI())
     
 
     def background_press(self, event):
@@ -655,6 +695,27 @@ class MainScreen(object):
     # whether the trial will be reinforced or not.
     
         self.clear_canvas()
+
+        if self.trial_type == "INSFR_2":
+            if self.trial_peck_counter >= 2:
+                self.write_data(None, "reinforced_trial")
+                if not operant_box_version or self.subject_ID == "TEST":
+                    self.mastercanvas.create_text(512,374,
+                                                  fill="white",
+                                                  font="Times 25 italic bold", 
+                                                  text=f"Trial Reinforced \nFood accessible ({int(self.hopper_duration/1000)} s)")
+                if operant_box_version:
+                    rpi_board.write(house_light_GPIO_num,
+                                    False)
+                    rpi_board.write(hopper_light_GPIO_num,
+                                    True)
+                    rpi_board.set_servo_pulsewidth(servo_GPIO_num,
+                                                   hopper_up_val)
+                self.root.after(self.hopper_duration, lambda: self.ITI())
+                return
+            else:
+                self.build_keys()
+                return
     
         # If INS/OMS trial, reinforcement is probabilistic
         # Extract the RR value from the trial type (e.g., INS_2 → rr_sched = 2)
@@ -676,6 +737,173 @@ class MainScreen(object):
             if choice(range(rr_sched)) == 0:  # Simulates a die roll (0 = reinforcement occurs/cancelled)
                 if "INS" in self.trial_type:
                     reinforced = True
+                elif "OMS" in self.trial_type:
+                    reinforced = False
+        
+        # If a reinforcement is earned...
+        if reinforced:
+            self.write_data(None, "reinforced_trial")
+            if not operant_box_version or self.subject_ID == "TEST":
+                self.mastercanvas.create_text(512,374,
+                                              fill="white",
+                                              font="Times 25 italic bold", 
+                                              text=f"Trial Reinforced \nFood accessible ({int(self.hopper_duration/1000)} s)") # just onscreen feedback
+            
+            # Next send output to the box's hardware
+            if operant_box_version:
+                rpi_board.write(house_light_GPIO_num,
+                                False) # Turn off the house light
+                rpi_board.write(hopper_light_GPIO_num,
+                                True) # Turn off the house light
+                rpi_board.set_servo_pulsewidth(servo_GPIO_num,
+                                               hopper_up_val) # Move hopper to up position
+            
+            self.root.after(self.hopper_duration, lambda: self.ITI())
+        
+        # If not reinforced, just proceed to the ITI
+        else:
+            self.write_data(None, "nonreinforced_trial")
+            self.ITI()
+        
+        
+
+    # %% Outside of the main loop functions, there are several additional
+    # repeated functions that are called either outside of the loop or 
+    # multiple times across phases.
+    
+    def change_cursor_state(self):
+        # This function toggles the cursor state on/off. 
+        # May need to update accessibility settings on your machince.
+        if self.cursor_visible: # If cursor currently on...
+            self.root.config(cursor="none") # Turn off cursor
+            print("### Cursor turned off ###")
+            self.cursor_visible = False
+        else: # If cursor currently off...
+            self.root.config(cursor="") # Turn on cursor
+            print("### Cursor turned on ###")
+            self.cursor_visible = True
+    
+    def clear_canvas(self):
+         # This is by far the most called function across the program. It
+         # deletes all the objects currently on the Canvas. A finer point to 
+         # note here is that objects still exist onscreen if they are covered
+         # up (rendering them invisible and inaccessible); if too many objects
+         # are stacked upon each other, it can may be too difficult to track/
+         # project at once (especially if many of the objects have functions 
+         # tied to them. Therefore, its important to frequently clean up the 
+         # Canvas by literally deleting every element.
+        try:
+            self.mastercanvas.delete("all")
+        except TclError:
+            print("No screen to exit")
+        
+    def exit_program(self, event): 
+        # This function can be called two different ways: automatically (when
+        # time/reinforcer session constraints are reached) or manually (via the
+        # "End Program" button in the control panel or bound "esc" key).
+            
+        # The program does a few different things:
+        #   1) Return hopper to down state, in case session was manually ended
+        #       during reinforcement (it shouldn't be)
+        #   2) Turn cursor back on
+        #   3) Writes compiled data matrix to a .csv file 
+        #   4) Destroys the Canvas object 
+        #   5) Calls the Paint object, which creates an onscreen Paint Canvas.
+        #       In the future, if we aren't using the paint object, we'll need 
+        #       to 
+        def other_exit_funcs():
+            if operant_box_version:
+                rpi_board.write(hopper_light_GPIO_num,
+                                False) # turn off hopper light
+                rpi_board.write(house_light_GPIO_num,
+                                False) # Turn off the house light
+                rpi_board.set_servo_pulsewidth(servo_GPIO_num,
+                                               hopper_down_val) # set hopper to down state
+                sleep(1) # Sleep for 1 s
+                rpi_board.set_PWM_dutycycle(servo_GPIO_num,
+                                            False)
+                rpi_board.set_PWM_frequency(servo_GPIO_num,
+                                            False)
+                rpi_board.stop() # Kill RPi board
+                
+                # root.after_cancel(AFTER)
+                if not self.cursor_visible:
+                	self.change_cursor_state() # turn cursor back on, if applicable
+            self.write_comp_data(True) # write data for end of session
+            self.root.destroy() # destroy Canvas
+            print("\n GUI window exited")
+            
+        self.clear_canvas()
+        other_exit_funcs()
+        print("\n You may now exit the terminal and operater windows now.")
+        if operant_box_version:
+            polygon_fill.main(self.subject_ID) # call paint object
+        
+    
+    def write_data(self, event, outcome ="NA"):
+            # This function writes a new data line after EVERY peck. Data is
+            # organized into a matrix (just a list/vector with two dimensions,
+            # similar to a table). This matrix is appended to throughout the 
+            # session, then written to a .csv once at the end of the session.
+            if event != None: 
+                x, y = event.x, event.y
+            else: # There are certain data events that are not pecks.
+                x, y = "NA", "NA"   
+                
+            print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | {self.trial_type:^5} | {str(datetime.now() - self.start_time)}")
+            # print(f"{outcome:>30} | x: {x: ^3} y: {y:^3} | Target: {self.current_target_location: ^2} | {str(datetime.now() - self.start_time)}")
+            self.session_data_frame.append([
+                str(datetime.now() - self.start_time), # SessionTime
+                x,                                     # Xcord
+                y,                                     # Ycord
+                outcome,                               # Event
+                round((time() - self.trial_start - (self.ITI_duration/1000)), 5),  # TrialTime
+                self.trial_assignment_list[self.current_trial_counter - 1], # TrialType
+                self.trial_peck_counter,              # TargetPeckNum
+                self.background_peck_counter,         # BackgroundPeckNum
+                self.current_trial_counter,           # TrialNum 
+                self.stimulus_assignments_dict[self.trial_type],  # TrialColor 
+                self.subject_ID,                      # Subject 
+                date.today()                          # Date 
+            ])
+        
+            header_list = ["SessionTime", "Xcord","Ycord", "Event", "TrialTime", 
+                           "TrialType","TargetPeckNum", "BackgroundPeckNum",
+                            "TrialNum", "TrialColor",
+                           "Subject", "Date"] # Column headers
+
+        
+    def write_comp_data(self, SessionEnded):
+        # The following function creates a .csv data document. It is either 
+        # called after each trial during the ITI (SessionEnded ==False) or 
+        # one the session finishes (SessionEnded). If the first time the 
+        # function is called, it will produce a new .csv out of the
+        # session_data_matrix variable, named after the subject, date, and
+        # training phase. Consecutive iterations of the function will simply
+        # write over the existing document.
+        if SessionEnded:
+            self.write_data(None, "SessionEnds") # Writes end of session to df
+        if self.record_data : # If experimenter has choosen to automatically record data in seperate sheet:
+            myFile_loc = f"{self.data_folder_directory}/{self.subject_ID}/{self.subject_ID}_{self.start_time.strftime('%Y-%m-%d_%H.%M.%S')}_P003Fc_data.csv"
+            # This loop writes the data in the matrix to the .csv              
+            edit_myFile = open(myFile_loc, 'w', newline='')
+            with edit_myFile as myFile:
+                w = writer(myFile, quoting=QUOTE_MINIMAL)
+                w.writerows(self.session_data_frame) # Write all event/trial data 
+            print(f"\n- Data file written to {myFile_loc}")
+                
+#%% Finally, this is the code that actually runs:
+try:   
+    if __name__ == '__main__':
+        cp = ExperimenterControlPanel()
+except:
+    # If an unexpected error, make sure to clean up the GPIO board
+    if operant_box_version:
+        rpi_board.set_PWM_dutycycle(servo_GPIO_num,
+                                    False)
+        rpi_board.set_PWM_frequency(servo_GPIO_num,
+                                    False)
+        rpi_board.stop()
                 elif "OMS" in self.trial_type:
                     reinforced = False
         
@@ -844,4 +1072,3 @@ except:
         rpi_board.set_PWM_frequency(servo_GPIO_num,
                                     False)
         rpi_board.stop()
-
