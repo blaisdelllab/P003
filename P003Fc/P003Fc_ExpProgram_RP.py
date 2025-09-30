@@ -482,11 +482,9 @@ class MainScreen(object):
             
             self.write_comp_data(False) # update data .csv with trial data from the previous trial
             
-            # First pick the trial type from the prexisting list....
-            self.trial_type = self.trial_assignment_list[self.current_trial_counter - 1]
-   
-            # Increase trial counter by one
+           # Increase trial counter by one, then pick the aligned trial code
             self.current_trial_counter += 1
+            self.trial_type = self.trial_assignment_list[self.current_trial_counter - 1]
             
             if self.current_trial_counter == 1:
                 self.root.after(self.ITI_duration, self.start_signal_period)
@@ -854,7 +852,7 @@ class MainScreen(object):
                 y,                                     # Ycord
                 outcome,                               # Event
                 round((time() - self.trial_start - (self.ITI_duration/1000)), 5),  # TrialTime
-                self.trial_assignment_list[self.current_trial_counter - 1], # TrialType
+                self.trial_type,                      # TrialType
                 self.trial_peck_counter,              # TargetPeckNum
                 self.background_peck_counter,         # BackgroundPeckNum
                 self.current_trial_counter,           # TrialNum 
