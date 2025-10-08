@@ -3,7 +3,7 @@
 """
 Created on Friday August 29 2025
 
-Last updated: 2025-09-03
+Last updated: 2025-10-07
 
 @author: Megan C. & Cyrus K.
 
@@ -22,6 +22,13 @@ color patterns counter-balanced across two groups of four subjects.
 Each trial lasted 10 seconds, and each ITI lasted 30 seconds. Within these 
 10 s, responses on and off the presented cue were tracked and could impact 
 the outcome of the trial.
+
+NOTE (Design update 2025-10-08): The trial outcome logic that previously used
+Random Ratio (RR) “dice rolls” is now Variable Ratio (VR): for each trial,
+a per-trial response requirement is drawn around the schedule value (e.g., ~50
+for “_50”) and compared to the total pecks on that trial. This narrows the 
+chance of reinforcement at far-below-mean peck counts (e.g., 25 on “_50”).
+
 """
 # Prior to running any code, its conventional to first import relevant 
 # libraries for the entire script. These can range from python libraries (sys)
@@ -367,14 +374,12 @@ class MainScreen(object):
                 tt for tt in potential_trial_assignments
                 if tt.startswith(self.phase_type)         # "INS" or "OMS"
             ]
-
-            # NEW: add FR2 purple stimulus for Peach/Itzamna in OMS
-            if (self.phase_type == "OMS") and (self.subject_ID in ["Itzamna", "Peach"]):
-                self.stimulus_assignments_dict["INSFR_2"] = "Purple.png"
-                potential_trial_assignments += ["INSFR_2"] * 20
-
-                # preload purple image
-                purple_path = os_path.join(stimuli_folder, "Purple.png")
+            
+            # SPECIAL CASE: Peach / Itzamna → FR2-only (20 trials), using table’s INSFR_2
+            if self.subject_ID in ["Peach", "Itzamna"]:
+                insfr2_file = (row.get("INSFR_2") or "Purple.png").strip()
+                self.stimulus_assignments_dict["INSFR_2"] = insfr2_file  # from table
+                purple_path = os_path.join(stimuli_folder, insfr2_file)
                 pil_img = (
                     Image.open(purple_path)
                          .convert("RGBA")
@@ -382,21 +387,41 @@ class MainScreen(object):
                 )
                 self.stimulus_images["INSFR_2"] = ImageTk.PhotoImage(pil_img)
 
+                # FR2-only list of 20 trials, no other stimuli
+                potential_trial_assignments = ["INSFR_2"] * 20
+
+            # If only one distinct trial code, skip the “no 4-in-a-row” shuffle loop
+            if len(set(potential_trial_assignments)) == 1:
+                self.trial_assignment_list = potential_trial_assignments[:]
+            else:
+                # Shuffle until no FOUR IDENTICAL trial codes appear consecutively
+                while True:
+                    shuffle(potential_trial_assignments)
+                    bad_run_found = any(
+                        potential_trial_assignments[i]   == potential_trial_assignments[i-1] ==
+                        potential_trial_assignments[i-2] == potential_trial_assignments[i-3]
+                        for i in range(3, len(potential_trial_assignments))
+                    )
+                    if not bad_run_found:
+                        self.trial_assignment_list = potential_trial_assignments[:]
+                        break
+
             # Now we have 4 distinct trial codes × 20 each  →  80 elements
             # Shuffle until no FOUR IDENTICAL trial codes appear consecutively
-            while True:
-                shuffle(potential_trial_assignments)
-
-                # look for any run of four identical elements
-                bad_run_found = any(
-                    potential_trial_assignments[i]   == potential_trial_assignments[i-1] ==
-                    potential_trial_assignments[i-2] == potential_trial_assignments[i-3]
-                    for i in range(3, len(potential_trial_assignments))
-                )
-
-                if not bad_run_found:
-                    self.trial_assignment_list = potential_trial_assignments[:]   # full 80
-                    break            # good order found; leave the while-loop
+            # (Skip this when the list is homogeneous, e.g., FR2 training)
+            if len(set(potential_trial_assignments)) != 1:
+                while True:
+                     shuffle(potential_trial_assignments)
+                     bad_run_found = any(
+                         potential_trial_assignments[i]   == potential_trial_assignments[i-1] ==
+                         potential_trial_assignments[i-2] == potential_trial_assignments[i-3]
+                         for i in range(3, len(potential_trial_assignments))
+                     )
+                     if not bad_run_found:
+                        self.trial_assignment_list = potential_trial_assignments[:]   # full 80
+                        break            # good order found; leave the while-loop
+            else:
+                self.trial_assignment_list = potential_trial_assignments[:]   # e.g., ["INSFR_2"]*20
 
             # Adjust max_trials if FR2 added (total length may be 100)
             self.max_trials = len(self.trial_assignment_list)
@@ -722,17 +747,25 @@ class MainScreen(object):
                 reinforced = True
 
         # ─────────────────────────────────────────────────────────────
-        # CHANGE: Count *all* pecks (key + background) toward RR rolls
+        # CHANGE: Count *all* pecks (key + background) toward VR criterion
         # ─────────────────────────────────────────────────────────────
         total_pecks = self.trial_peck_counter + self.background_peck_counter
 
-        # Roll a dice a number of times equal to the number of pecks in the trial
-        for _ in range(total_pecks): 
-            if choice(range(rr_sched)) == 0:  # Simulates a die roll (0 = reinforcement occurs/cancelled)
-                if "INS" in self.trial_type:
-                    reinforced = True
-                elif "OMS" in self.trial_type:
-                    reinforced = False
+         # Draw a per-trial VR requirement with bands:
+        # ±15% for 50; ±30% otherwise (ranges inclusive)
+        band = 0.15 if rr_sched == 50 else 0.30
+        low  = max(1, int(round((1 - band) * rr_sched)))
+        high = max(low, int(round((1 + band) * rr_sched)))
+        requirement = choice(list(range(low, high + 1)))
+
+        # INS: reinforced if total_pecks >= requirement
+        # OMS: reinforcement cancelled if total_pecks >= requirement
+        if "INS" in self.trial_type:
+            if total_pecks >= requirement:
+                reinforced = True
+        elif "OMS" in self.trial_type:
+            if total_pecks >= requirement:
+                reinforced = False
         
         # If a reinforcement is earned...
         if reinforced:
