@@ -387,8 +387,8 @@ class MainScreen(object):
                 )
                 self.stimulus_images["INSFR_2"] = ImageTk.PhotoImage(pil_img)
 
-                # FR2-only list of 20 trials, no other stimuli
-                potential_trial_assignments = ["INSFR_2"] * 20
+                # Itzamna and Peach get FR 2 stimuli (Purple)
+                potential_trial_assignments += ["INSFR_2"] * 20
 
             # If only one distinct trial code, skip the “no 4-in-a-row” shuffle loop
             if len(set(potential_trial_assignments)) == 1:
@@ -753,7 +753,7 @@ class MainScreen(object):
 
          # Draw a per-trial VR requirement with bands:
         # ±15% for 50; ±30% otherwise (ranges inclusive)
-        band = 0.15 if rr_sched == 50 else 0.30
+        band = 0.30
         low  = max(1, int(round((1 - band) * rr_sched)))
         high = max(low, int(round((1 + band) * rr_sched)))
         requirement = choice(list(range(low, high + 1)))
