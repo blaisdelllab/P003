@@ -752,7 +752,7 @@ class MainScreen(object):
         total_pecks = self.trial_peck_counter + self.background_peck_counter
 
          # Draw a per-trial VR requirement with bands:
-        # ±15% for 50; ±30% otherwise (ranges inclusive)
+        # ±30% range for VR 
         band = 0.30
         low  = max(1, int(round((1 - band) * rr_sched)))
         high = max(low, int(round((1 + band) * rr_sched)))
