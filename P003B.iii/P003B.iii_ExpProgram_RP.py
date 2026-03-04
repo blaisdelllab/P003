@@ -127,7 +127,7 @@ class ExperimenterControlPanel(object):
         # should be stored.
         if operant_box_version:
             # Setup the data directory in "Documents"
-            self.data_folder = "P003Bii_data" # The folder within Documents where subject data is kept
+            self.data_folder = "P003Biii_data" # The folder within Documents where subject data is kept
             self.data_folder_directory = str(os_path.expanduser('~'))+"/Desktop/Data/" + self.data_folder
         else: # If not, just save in the current directory the program us being run in 
             self.data_folder_directory = getcwd() + "/data"
