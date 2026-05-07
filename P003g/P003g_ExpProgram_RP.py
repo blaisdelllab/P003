@@ -332,8 +332,8 @@ class MainScreen(object):
             self.trial_type = "NA"
             
             # First set up the path to the stimulus identity .csv document
-            stimuli_csv_path = str(os_path.expanduser('~')) + "/Desktop/P003g/P003g_stimulus_assignments.csv"
-            stimuli_folder_path = str(os_path.expanduser('~')) + "/Desktop/P003g/stimuli"
+            stimuli_csv_path = str(os_path.expanduser('~')) + "/Desktop/Experiments/P003/P003g/P003g_stimulus_assignments.csv"
+            stimuli_folder_path = str(os_path.expanduser('~')) + "/Desktop/Experiments/P003/P003g/stimuli"
                 
             # Import the used sample stimuli, their respective key assignments,
             # and conditional assignments as a lists of dictionaries that are 
