@@ -209,7 +209,7 @@ class ExperimenterControlPanel(object):
         # exists in the respective "data" folder within the Documents
         # folder and, if not, creates one.
         try:
-            if not os_path.isdir(self.data_folder_directory + pigeon_name):
+            if not os_path.isdir(os_path.join(self.data_folder_directory, pigeon_name)):
                 mkdir(os_path.join(self.data_folder_directory, pigeon_name))
                 print("\n ** NEW DATA FOLDER FOR %s CREATED **" % pigeon_name.upper())
         except FileExistsError:
@@ -343,8 +343,8 @@ class MainScreen(object):
             self.trial_type = "NA"
             
             # First set up the path to the stimulus identity .csv document
-            stimuli_csv_path = str(os_path.expanduser('~')) + "/home/blaisdelllab/Desktop/Experiments/P003/P003g/P003g_stimulus_assignments.csv"
-            stimuli_folder_path = str(os_path.expanduser('~')) + "/Desktop/P003g/stimuli"
+            stimuli_csv_path = str(os_path.expanduser('~')) + "/Desktop/Experiments/P003/P003g/P003g_stimulus_assignments.csv"
+            stimuli_folder_path = str(os_path.expanduser('~')) + "/Desktop/Experiments/P003/P003g/stimuli"
                 
             # Import the used sample stimuli, their respective key assignments,
             # and conditional assignments as a lists of dictionaries that are 
@@ -859,3 +859,4 @@ except:
         rpi_board.set_PWM_frequency(servo_GPIO_num,
                                     False)
         rpi_board.stop()
+
