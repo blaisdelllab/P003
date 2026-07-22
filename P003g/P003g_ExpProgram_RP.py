@@ -33,8 +33,19 @@ from tkinter import Toplevel, Canvas, BOTH, TclError, Tk, Label, Button, \
      StringVar, OptionMenu, IntVar, Radiobutton
 from time import time, sleep
 from os import getcwd, popen, mkdir, path as os_path
-from random import choice, shuffle
+from random import choice, random, shuffle
 from PIL import ImageTk, Image  
+
+YOKED_REINFORCEMENT_RATIOS = {
+    "Hawthorne": {"INS": 0.005555556, "OMS": 0.842592593, "PAV": 1.0},
+    "Hendrix": {"INS": 0.003191489, "OMS": 0.987588652, "PAV": 1.0},
+    "Herriot": {"INS": 0.002898551, "OMS": 0.876811594, "PAV": 1.0},
+    "Iggy": {"INS": 0.009375, "OMS": 0.6875, "PAV": 1.0},
+    "Kurt": {"INS": 0.305797101, "OMS": 0.880434783, "PAV": 1.0},
+    "Peach": {"INS": 0.142907801, "OMS": 0.94822695, "PAV": 1.0},
+    "Wario": {"INS": 0.283680556, "OMS": 0.814236111, "PAV": 1.0},
+    "TEST": {"INS": 0.05, "OMS": 0.95, "PAV": 1.0}
+}
 
 # The first variable declared is whether the program is the operant box version
 # for pigeons, or the test version for humans to view. The variable below is 
@@ -332,8 +343,8 @@ class MainScreen(object):
             self.trial_type = "NA"
             
             # First set up the path to the stimulus identity .csv document
-            stimuli_csv_path = str(os_path.expanduser('~')) + "/Desktop/Experiments/P003/P003g/P003g_stimulus_assignments.csv"
-            stimuli_folder_path = str(os_path.expanduser('~')) + "/Desktop/Experiments/P003/P003g/stimuli"
+            stimuli_csv_path = str(os_path.expanduser('~')) + "/Desktop/P003g/P003g_stimulus_assignments.csv"
+            stimuli_folder_path = str(os_path.expanduser('~')) + "/Desktop/P003g/stimuli"
                 
             # Import the used sample stimuli, their respective key assignments,
             # and conditional assignments as a lists of dictionaries that are 
@@ -651,28 +662,37 @@ class MainScreen(object):
         
         self.clear_canvas()
         
-        # Always reinforce PAV trials
-        if self.trial_type == "PAV":
-            reinforced = True
-        
-        # If INS/OMS trial, reinforcement is probabalistic
+        if self.exp_phase_name == "Yoked":
+            subject_ratios = YOKED_REINFORCEMENT_RATIOS.get(self.subject_ID)
+            if subject_ratios is None:
+                raise ValueError(f"No yoked reinforcement ratios found for {self.subject_ID}")
+
+            reinforcement_ratio = subject_ratios[self.trial_type]
+            reinforced = random() < reinforcement_ratio
+
         else:
-            # Starts out with preset reinforcement ideals...
-            if self.trial_type == "INS":
-                reinforced = False
-            elif self.trial_type == "OMS":
+            # Always reinforce PAV trials
+            if self.trial_type == "PAV":
                 reinforced = True
             
-            # Run a simulation of a dice being rolled...
-            rr_sched = 20 # RR20 only
-            # Roll a die a number of times equal to the number of pecks
-            # recorded within that trial
-            for iteration in list(range(0, self.trial_peck_counter)): 
-                if choice(list(range(0, rr_sched))) == 0:
-                    if self.trial_type == "INS":
-                        reinforced = True
-                    elif self.trial_type == "OMS":
-                        reinforced = False
+            # If INS/OMS trial, reinforcement is probabalistic
+            else:
+                # Starts out with preset reinforcement ideals...
+                if self.trial_type == "INS":
+                    reinforced = False
+                elif self.trial_type == "OMS":
+                    reinforced = True
+                
+                # Run a simulation of a dice being rolled...
+                rr_sched = 20 # RR20 only
+                # Roll a die a number of times equal to the number of pecks
+                # recorded within that trial
+                for iteration in list(range(0, self.trial_peck_counter)): 
+                    if choice(list(range(0, rr_sched))) == 0:
+                        if self.trial_type == "INS":
+                            reinforced = True
+                        elif self.trial_type == "OMS":
+                            reinforced = False
         
         # If a reinforcement is earned...
         if reinforced:
